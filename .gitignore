@@ -1,0 +1,22 @@
+# Secrets — NEVER commit these
+credentials.json
+token.pickle
+*.pickle
+.env
+.env.*
+
+# Generated per-run
+cleanup_plan.json
+
+# Python
+venv/
+__pycache__/
+*.pyc
+*.pyo
+
+# Claude Code local settings (commands/ ARE committed)
+.claude/settings.local.json
+
+# OS
+.DS_Store
+Thumbs.db
