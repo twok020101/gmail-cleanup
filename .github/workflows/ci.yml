@@ -1,0 +1,38 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.9", "3.10", "3.11", "3.12"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      - name: Upgrade pip
+        run: python -m pip install --upgrade pip
+
+      - name: Install package with dev extras
+        run: pip install -e ".[dev]"
+
+      - name: Compile Python files
+        run: python -m py_compile $(find src -name "*.py") cleanup.py
+
+      - name: Test package imports
+        run: python -c "import gmail_cleanup; from gmail_cleanup import cli, auth, gmail_ops, history, heuristics; print('imports OK')"
+
+      - name: Test heuristics module
+        run: python -c "from gmail_cleanup.heuristics import generate_aggressive_plan; p = generate_aggressive_plan(); assert len(p['queries']) >= 5; print('heuristics OK')"
+
+      - name: Run ruff linter
+        run: ruff check .
+        continue-on-error: false
