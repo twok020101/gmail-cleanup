@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 Gmail Cleanup Engine
 Accepts a JSON cleanup plan and trashes matching emails.
@@ -20,12 +21,30 @@ import json
 import os
 import pickle
 import sys
+
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+
+# Auto-reexec with venv Python if we're not already using it
+def _ensure_venv():
+    venv_py = None
+    for path in ["venv/bin/python", "venv/Scripts/python.exe"]:
+        full = os.path.join(SCRIPT_DIR, path)
+        if os.path.exists(full):
+            venv_py = full
+            break
+    if not venv_py:
+        print("ERROR: venv not found. Run: bash setup.sh")
+        sys.exit(1)
+    if os.path.realpath(sys.executable) != os.path.realpath(venv_py):
+        os.execv(venv_py, [venv_py, os.path.abspath(__file__)] + sys.argv[1:])
+
+_ensure_venv()
+
 from google.auth.transport.requests import Request
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 
 SCOPES = ["https://www.googleapis.com/auth/gmail.modify"]
-SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
 def authenticate():

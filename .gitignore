@@ -7,6 +7,7 @@ token.pickle
 
 # Generated per-run
 cleanup_plan.json
+.cleanup-history.jsonl
 
 # Python
 venv/
@@ -20,3 +21,6 @@ __pycache__/
 # OS
 .DS_Store
 Thumbs.db
+
+# Branch-only context (never commit)
+docs/*.md
