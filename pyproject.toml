@@ -1,0 +1,48 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "gmail-cleanup"
+version = "0.1.0"
+description = "AI-powered (or heuristic) Gmail inbox cleanup CLI"
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.9"
+authors = [{ name = "Kshitij Kurandwad", email = "kshitijkurandwad01@gmail.com" }]
+keywords = ["gmail", "cleanup", "cli", "productivity"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Environment :: Console",
+  "Intended Audience :: End Users/Desktop",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Communications :: Email",
+  "Topic :: Utilities",
+]
+dependencies = [
+  "google-api-python-client>=2.0.0",
+  "google-auth-oauthlib>=1.0.0",
+  "google-auth-httplib2>=0.1.0",
+]
+
+[project.optional-dependencies]
+dev = ["ruff>=0.5.0"]
+
+[project.scripts]
+gmail-cleanup = "gmail_cleanup.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/twok020101/gmail-cleanup"
+Issues = "https://github.com/twok020101/gmail-cleanup/issues"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py39"

@@ -2,16 +2,39 @@
 
 ![License: MIT](https://img.shields.io/badge/license-MIT-green.svg) ![Python 3.9+](https://img.shields.io/badge/python-3.9%2B-blue.svg) ![Works with Claude Code](https://img.shields.io/badge/works%20with-Claude%20Code-8A2BE2.svg)
 
-AI-powered Gmail cleanup that runs inside [Claude Code](https://claude.ai/code).
+Gmail inbox cleanup — one command, with or without AI. Works standalone via aggressive heuristic rules, or with Claude Code for smart AI-driven analysis.
 
-Claude reads your inbox, figures out what's junk, and deletes it — no manual filters, no dragging emails to trash one by one.
+One-shot deletion of junk mail — no manual filters, no dragging emails to trash one by one.
 
 ![demo](docs/demo.gif)
 
 <sub>_Demo GIF is generated from [`docs/demo.tape`](docs/demo.tape) via [VHS](https://github.com/charmbracelet/vhs) — `brew install vhs && vhs docs/demo.tape`. The simulation is scripted ([`docs/demo.sh`](docs/demo.sh)) so no real Gmail account is needed to re-render it._</sub>
 
+## Install
+
+**Recommended — pipx (one-shot, no clone):**
+```bash
+pipx install git+https://github.com/twok020101/gmail-cleanup.git
+# once PyPI publish lands: pipx install gmail-cleanup
+
+gmail-cleanup --auto                  # preview an aggressive cleanup plan
+gmail-cleanup --auto --execute        # actually run it
+gmail-cleanup --auto --execute --limit 500
+gmail-cleanup --undo                  # restore the most recent run
+```
+
+You'll still need a `credentials.json` in the current directory on first run — see [Google Cloud credentials guide](#google-cloud-credentials-guide) below. Run `gmail-cleanup` from whichever folder holds your credentials.
+
+**Without pipx — clone and run (original flow):**
+See [Setup](#setup-one-time-5-min) below.
+
 ## How it works
 
+**Two modes:**
+- **Heuristic mode** (no AI): `gmail-cleanup --auto` → rules-based plan (Promotions, Social 14d+, Updates 30d+, Spam, no-reply 90d+, job platforms 60d+) → execute.
+- **AI mode** (with Claude Code): Claude scans your inbox via Gmail MCP → generates a smarter plan → execute.
+
+**AI mode flow:**
 ```
 Gmail MCP (read-only)     cleanup.py (delete access)
         │                         │
@@ -27,9 +50,9 @@ Gmail MCP (read-only)     cleanup.py (delete access)
 
 ## Requirements
 
-- [Claude Code](https://claude.ai/code) (CLI, desktop app, or IDE extension)
 - Python 3.9+ ([python.org/downloads](https://www.python.org/downloads/))
 - A Google account
+- [Claude Code](https://claude.ai/code) (optional — only needed for AI-driven analysis mode)
 
 ### Platform support
 
@@ -102,6 +125,15 @@ Then follow the `credentials.json` instructions printed by setup.sh, or see the 
 
 ## Usage
 
+**Heuristic mode (no AI, no Claude Code needed):**
+```bash
+gmail-cleanup --auto                  # preview aggressive cleanup rules
+gmail-cleanup --auto --execute        # execute (dry-run is default)
+gmail-cleanup --auto --execute --limit 100
+gmail-cleanup --undo                  # restore previous run
+```
+
+**AI mode (with Claude Code):**
 Open this folder in Claude Code and say:
 
 ```
@@ -115,12 +147,12 @@ Or run the skill directly:
 ```
 
 Claude will:
-- Scan your inbox
+- Scan your inbox using Gmail MCP
 - Show a summary of what it found
 - Ask what to keep/delete
 - Execute the cleanup
 
-### Manual usage (without Claude)
+### Manual usage (without Claude Code)
 
 Write your own plan and run the script directly:
 
@@ -152,30 +184,37 @@ On Windows, swap `venv/bin/python` for `venv\Scripts\python`.
 
 ## What gets deleted by default
 
-| Category | Action |
+**Heuristic mode (`--auto`):**
+| Category | Condition |
 |---|---|
-| Promotions tab | Delete all |
-| Updates tab | Delete all |
-| Spam | Delete all |
-| Newsletters in Primary | Delete (after user confirmation) |
-| Job platform spam | Delete |
-| Bank/payment alerts | Keep recent, delete older than X months |
-| GitHub, Apple, Google | Keep recent, delete older than X months |
-| Personal emails | Never deleted |
+| Promotions tab | All |
+| Social tab | Older than 14 days |
+| Updates tab | Older than 30 days |
+| Spam | All |
+| No-reply senders | Older than 90 days |
+| Job platforms | Older than 60 days |
+| Unsubscribe-containing emails | Older than 90 days |
+| Starred, Important, Sent, Drafts, personal | Never deleted |
+
+**AI mode (Claude Code):**
+Claude analyzes your actual inbox and shows you the plan before executing. Bank/payment alerts and transactional emails are typically preserved.
 
 ## FAQ
 
 **Is it safe?**
 Emails go to Trash, not permanently deleted. You have 30 days to recover anything from Gmail's Trash. On top of that: **dry-run is the default** — you must pass `--execute` to delete anything, and `--undo` restores the most recent run if you change your mind.
 
-**Can Claude delete without asking?**
+**Do I need to pay for Claude Code?**
+No. The `--auto` heuristic mode runs 100% locally with no LLM cost. Claude Code is optional and only used for the smart AI-analysis mode.
+
+**Can Claude delete without asking (AI mode)?**
 No. The skill always shows the cleanup plan and waits for your confirmation before executing.
 
 **Does my data leave my machine?**
-The Gmail MCP reads emails through Claude's MCP connection. The deletion script runs 100% locally using your own Google OAuth credentials. No data is sent to any third party.
+In heuristic mode: deletion runs 100% locally using your own Google OAuth credentials. In AI mode: the Gmail MCP reads emails through Claude's MCP connection. No data is sent to any third party beyond Claude's platform (which applies the same privacy rules as any Claude Code session).
 
 **Can I run it periodically?**
-Yes. Come back to this folder in Claude Code every 2 weeks and say "clean up my gmail". Claude re-scans and generates a fresh plan each time.
+Yes. Heuristic mode: run `gmail-cleanup --auto --execute` on a cron job or scheduler. AI mode: come back to Claude Code every 2 weeks and run `/gmail-cleanup` for a fresh analysis.
 
 ## Google Cloud credentials guide
 
