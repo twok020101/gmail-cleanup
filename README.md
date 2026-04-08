@@ -14,8 +14,8 @@ One-shot deletion of junk mail — no manual filters, no dragging emails to tras
 
 **Recommended — pipx (one-shot, no clone):**
 ```bash
-pipx install git+https://github.com/twok020101/gmail-cleanup.git
-# once PyPI publish lands: pipx install gmail-cleanup
+pipx install gmail-cleanup-cli
+# or from git directly: pipx install git+https://github.com/twok020101/gmail-cleanup.git
 
 gmail-cleanup --auto                  # preview an aggressive cleanup plan
 gmail-cleanup --auto --execute        # actually run it
